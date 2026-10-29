@@ -5,385 +5,505 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mortgage Assistant</title>
-<style>
-:root {
-  --bg:#0b0b0d; --panel:#151518; --panel2:#1e1e23;
-  --gold:#d4af37; --text:#f5f5f5; --muted:#a1a1aa;
-  --line:#303036; --green:#22c55e;
-}
-* { box-sizing:border-box; }
-body { margin:0; background:var(--bg); color:var(--text); font:14px Arial,sans-serif; }
-button,input,select { font:inherit; }
-button { cursor:pointer; }
-.app { display:flex; min-height:100vh; }
-.sidebar { width:225px; padding:25px 15px; background:#111114; border-right:1px solid var(--line); flex-shrink:0; }
-.brand { color:var(--gold); font-size:19px; font-weight:bold; margin-bottom:32px; }
-.brand small { display:block; font-size:10px; letter-spacing:2px; margin-top:6px; }
-.nav { display:block; width:100%; text-align:left; padding:13px; margin-bottom:6px; border:0; border-radius:8px; background:transparent; color:var(--muted); }
-.nav.active,.nav:hover { background:#302a19; color:var(--gold); }
-.main { flex:1; min-width:0; }
-.topbar { padding:22px 28px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:12px; align-items:center; }
-.content { padding:28px; max-width:1300px; margin:auto; }
-h1 { margin:0 0 8px; font-size:27px; }
-h2 { font-size:17px; }
-.muted { color:var(--muted); line-height:1.6; }
-.primary { background:var(--gold); color:#17150e; border:0; border-radius:7px; padding:11px 15px; font-weight:bold; }
-.secondary { background:var(--panel2); color:white; border:1px solid var(--line); border-radius:7px; padding:10px 13px; }
-.stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin:25px 0; }
-.card,.panel { background:var(--panel); border:1px solid #29292f; border-radius:12px; padding:19px; }
-.card small { color:var(--muted); }
-.number { display:block; font-size:30px; margin-top:16px; color:var(--gold); }
-.grid { display:grid; grid-template-columns:1.2fr 1fr; gap:15px; }
-.panel-head { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
-table { width:100%; border-collapse:collapse; margin-top:15px; }
-th,td { padding:13px 8px; border-bottom:1px solid var(--line); text-align:left; font-size:12px; }
-th { color:var(--muted); font-weight:normal; }
-.status { color:#f0d77d; background:#302a19; padding:5px 8px; border-radius:15px; font-size:11px; }
-.empty { text-align:center; padding:30px 8px; color:var(--muted); }
-input,select { width:100%; background:#1b1b20; color:white; border:1px solid var(--line); border-radius:7px; padding:11px; }
-label { display:block; margin:12px 0 6px; color:#ddd; font-size:12px; }
-.modal { display:none; position:fixed; inset:0; background:#000b; align-items:center; justify-content:center; padding:18px; }
-.modal.open { display:flex; }
-.dialog { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:24px; width:100%; max-width:440px; }
-.dialog h2 { margin-top:0; }
-.actions { display:flex; justify-content:flex-end; gap:9px; margin-top:20px; }
-.notice { margin-top:16px; font-size:12px; color:var(--muted); }
-@media(max-width:850px) {
-  .sidebar { width:170px; }
-  .stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .grid { grid-template-columns:1fr; }
-  .content { padding:18px; }
-  .topbar { padding:17px; }
-}
-@media(max-width:560px) {
-  .app { display:block; }
-  .sidebar { width:100%; padding:13px; border-right:0; border-bottom:1px solid var(--line); }
-  .brand { margin:0 0 12px; }
-  .nav { display:inline-block; width:auto; padding:9px; }
-  .topbar { align-items:flex-start; }
-  .topbar .muted { display:none; }
-  h1 { font-size:23px; }
-}
-</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#0b0b0d;--panel:#151518;--panel2:#202026;--gold:#d4af37;--text:#f5f5f5;--muted:#a1a1aa;--line:#303036;--green:#22c55e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+.app{display:flex;min-height:100vh}
+.sidebar{width:235px;padding:23px 14px;background:#111114;border-right:1px solid var(--line);flex-shrink:0}
+.brand{color:var(--gold);font-size:19px;font-weight:bold;margin-bottom:28px}
+.brand small{display:block;font-size:10px;letter-spacing:2px;margin-top:6px}
+.nav{display:block;width:100%;text-align:left;padding:12px;margin-bottom:5px;border:0;border-radius:8px;background:transparent;color:var(--muted)}
+.nav.active,.nav:hover{background:#302a19;color:var(--gold)}
+.main{flex:1;min-width:0}
+.topbar{padding:20px 26px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.content{padding:26px;max-width:1400px;margin:auto}
+h1{font-size:26px;margin:0 0 8px}
+h2{font-size:17px}
+h3{font-size:14px}
+.muted,.small{color:var(--muted);line-height:1.6}
+.small{font-size:12px}
+.primary,.secondary,.danger{border:0;border-radius:7px;padding:11px 14px;font-weight:bold}
+.primary{background:var(--gold);color:#17150e}
+.secondary{background:var(--panel2);color:white;border:1px solid var(--line)}
+.danger{background:#512727;color:#fff}
+input,select,textarea{width:100%;background:#1b1b20;color:white;border:1px solid var(--line);border-radius:7px;padding:11px}
+textarea{min-height:90px;resize:vertical}
+label{display:block;margin:12px 0 6px;color:#ddd;font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:24px 0}
+.card,.panel{background:var(--panel);border:1px solid #29292f;border-radius:12px;padding:18px;min-width:0}
+.card small{color:var(--muted)}
+.number{display:block;font-size:28px;margin-top:12px;color:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.toolbar>*{flex:1;min-width:150px}
+table{width:100%;border-collapse:collapse;margin-top:14px}
+th,td{padding:12px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:12px;overflow-wrap:anywhere}
+th{color:var(--muted);font-weight:normal}
+.table-wrap{overflow-x:auto}
+.status{display:inline-block;color:#f0d77d;background:#302a19;padding:5px 8px;border-radius:15px;font-size:11px}
+.notice{border:1px solid var(--line);border-radius:8px;padding:12px;color:var(--muted);line-height:1.5;margin:14px 0}
+.page[hidden]{display:none!important}
+.modal{display:none;position:fixed;inset:0;background:#000b;align-items:center;justify-content:center;padding:18px;z-index:5}
+.modal.open{display:flex}
+.dialog{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow:auto}
+.actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:18px}
+.item{padding:13px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.chat{padding:12px;background:var(--panel2);border-radius:9px;margin:10px 0;line-height:1.5}
+.tag{color:var(--green);font-size:11px}
+#loginScreen{max-width:400px;margin:70px auto;padding:28px;background:#fff;color:#222;border-radius:12px;font-family:Arial,sans-serif}
+#loginScreen input{background:#fff;color:#222;border-color:#ccc}
+#loginScreen label{color:#333}
+#loginMessage{color:#b91c1c}
+@media(max-width:850px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.sidebar{width:195px}.content{padding:18px}}
+@media(max-width:600px){.app{display:block}.sidebar{width:100%;padding:12px}.brand{margin-bottom:12px}.nav{display:inline-block;width:auto;padding:9px}.grid{grid-template-columns:1fr}.content{padding:14px}.topbar{padding:15px}.stats{gap:8px}.card{padding:12px}.number{font-size:23px}}
+</style>
 </head>
 <body>
 
-<div id="loginScreen" style="max-width:400px;margin:80px auto;padding:28px;background:white;color:#222;border-radius:12px;font-family:Arial,sans-serif;">
+<div id="loginScreen">
   <h2>Mortgage Assistant</h2>
   <p>Inicia sesión para continuar.</p>
   <form id="loginForm">
     <label for="loginEmail">Correo electrónico</label>
-    <input id="loginEmail" type="email" required autocomplete="username" style="display:block;width:100%;padding:12px;margin:8px 0 16px;">
+    <input id="loginEmail" type="email" required autocomplete="username">
     <label for="loginPassword">Contraseña</label>
-    <input id="loginPassword" type="password" required autocomplete="current-password" style="display:block;width:100%;padding:12px;margin:8px 0 16px;">
-    <button type="submit" style="padding:12px;width:100%;">Iniciar sesión</button>
+    <input id="loginPassword" type="password" required autocomplete="current-password">
+    <button class="primary" style="width:100%;margin-top:18px" type="submit">Iniciar sesión</button>
     <p id="loginMessage" role="alert"></p>
   </form>
 </div>
 
-<div class="app" id="mainApp" style="display:none;">
+<div class="app" id="mainApp" style="display:none">
   <aside class="sidebar">
     <div class="brand">◆ Mortgage Assistant<small>LOAN OPERATIONS</small></div>
-    <button class="nav active" onclick="showPage('dashboard',this)">⌂ &nbsp; Dashboard</button>
-    <button class="nav" onclick="showPage('leads',this)">♙ &nbsp; Leads</button>
-    <button class="nav" onclick="showPage('clients',this)">♧ &nbsp; Clientes</button>
-    <button class="nav" onclick="showPage('tasks',this)">✓ &nbsp; Tareas</button>
-    <button class="nav" onclick="showPage('integrations',this)">⚙ &nbsp; Integraciones</button>
-    <p class="notice">Versión inicial de prueba</p>
+    <button class="nav active" data-page="dashboard">⌂ Dashboard</button>
+    <button class="nav" data-page="contacts">♙ Contactos y leads</button>
+    <button class="nav" data-page="inbox">✉ Bandeja del bot</button>
+    <button class="nav" data-page="knowledge">▤ Base de conocimiento</button>
+    <button class="nav" data-page="appointments">▦ Citas</button>
+    <button class="nav" data-page="integrations">⚙ Integraciones</button>
+    <div class="notice">Panel de administración</div>
+    <button class="secondary" id="logoutButton" style="width:100%">Cerrar sesión</button>
   </aside>
+
   <main class="main">
     <header class="topbar">
-      <span class="muted">Workspace / <b id="crumb">Dashboard</b></span>
-      <button class="primary" onclick="openModal()">+ Nuevo lead</button>
+      <div class="muted">Mortgage Assistant / <b id="crumb">Dashboard</b></div>
+      <button class="primary" id="newLeadButton">+ Nuevo lead</button>
     </header>
+
     <div class="content">
-      <section id="dashboard">
-        <p style="color:var(--gold);letter-spacing:2px;font-size:11px">RESUMEN GENERAL</p>
-        <h1>Bienvenida a Mortgage Assistant</h1>
-        <p class="muted">Tu centro de operaciones hipotecarias.</p>
+      <section class="page" id="dashboard">
+        <h1>Centro de operaciones</h1>
+        <p class="muted">Resumen de prospectos y automatizaciones hipotecarias.</p>
         <div class="stats">
-          <div class="card"><small>Total de leads</small><strong class="number" id="total">0</strong></div>
+          <div class="card"><small>Total de leads guardados</small><strong class="number" id="total">0</strong></div>
           <div class="card"><small>Nuevos</small><strong class="number" id="newTotal">0</strong></div>
-          <div class="card"><small>Clientes</small><strong class="number" id="clientTotal">0</strong></div>
-          <div class="card"><small>Integraciones</small><strong class="number">0/6</strong></div>
+          <div class="card"><small>Contactos convertidos</small><strong class="number" id="clientTotal">0</strong></div>
+          <div class="card"><small>Citas registradas en este panel</small><strong class="number" id="appointmentTotal">0</strong></div>
         </div>
         <div class="grid">
           <div class="panel">
-            <div class="panel-head">
-              <div><h2>Prospectos recientes</h2><span class="muted">Contactos de prueba</span></div>
-              <button class="secondary" onclick="showPage('leads')">Ver todos</button>
-            </div>
-            <div id="recent" class="empty">Todavía no hay prospectos.<br><br>Agrega uno para comenzar.</div>
+            <h2>Últimos prospectos</h2>
+            <div id="recent" class="muted">Inicia sesión para cargar los prospectos.</div>
+            <button class="secondary" data-goto="contacts">Abrir contactos</button>
           </div>
           <div class="panel">
-            <h2>Asistente inteligente</h2>
-            <p class="muted">Este espacio estará disponible para ayudarte con seguimientos, organización de leads y tareas administrativas.</p>
-            <p class="notice">La inteligencia artificial aún no está conectada.</p>
+            <h2>Estado del asistente</h2>
+            <p class="muted">El panel está preparado para organizar los leads y la información del bot.</p>
+            <div class="item">Base de datos de leads <span class="tag">Supabase</span></div>
+            <div class="item">Mensajes de canales externos <span class="status">Pendiente de conexión</span></div>
+            <div class="item">Respuestas automáticas <span class="status">Pendiente de conexión</span></div>
+            <div class="item">Agenda de Google <span class="status">Pendiente de conexión</span></div>
           </div>
         </div>
       </section>
 
-      <section id="leads" hidden>
-        <h1>Gestión de leads</h1>
-        <p class="muted">Administra tus prospectos de forma organizada.</p>
-        <div class="panel">
-          <input id="search" placeholder="Buscar por nombre, email o teléfono..." oninput="renderLeads()">
-          <div id="leadTable"></div>
+      <section class="page" id="contacts" hidden>
+        <h1>Contactos y leads</h1>
+        <p class="muted">Consulta, busca y exporta los prospectos guardados en Supabase.</p>
+        <div class="toolbar">
+          <input id="contactSearch" placeholder="Buscar nombre, teléfono o email">
+          <button class="primary" id="addContactButton">+ Agregar contacto</button>
+          <button class="secondary" id="exportButton">Exportar CSV</button>
+          <button class="secondary" id="refreshButton">Actualizar</button>
         </div>
+        <div class="notice">Los leads guardados aquí proceden de la base de datos. La entrada automática desde redes requiere configurar las integraciones.</div>
+        <div class="panel table-wrap" id="contactsTable">Cargando contactos...</div>
       </section>
-      <section id="clients" hidden>
-        <h1>Clientes</h1>
-        <p class="muted">Los contactos marcados como convertidos aparecerán aquí.</p>
-        <div class="panel" id="clientList">Todavía no hay clientes convertidos.</div>
-      </section>
-      <section id="tasks" hidden>
-        <h1>Tareas y seguimientos</h1>
-        <div class="panel"><p class="muted">Este módulo se desarrollará en la siguiente fase.</p></div>
-      </section>
-      <section id="integrations" hidden>
-        <h1>Integraciones</h1>
-        <p class="muted">Estas conexiones todavía no están configuradas.</p>
+
+      <section class="page" id="inbox" hidden>
+        <h1>Bandeja del bot</h1>
+        <p class="muted">Espacio de trabajo para conversaciones entrantes.</p>
+        <div class="notice">La bandeja aún no recibe mensajes reales. Para activarla hay que conectar los webhooks de WhatsApp, Instagram y Facebook.</div>
         <div class="grid">
-          <div class="panel">Supabase <p class="notice">Pendiente de conectar</p></div>
-          <div class="panel">Bonzo CRM <p class="notice">Pendiente de conectar</p></div>
-          <div class="panel">WhatsApp Business <p class="notice">Pendiente de conectar</p></div>
-          <div class="panel">Facebook e Instagram <p class="notice">Pendiente de conectar</p></div>
-          <div class="panel">Google Calendar <p class="notice">Pendiente de conectar</p></div>
-          <div class="panel">Servicio de IA <p class="notice">Pendiente de conectar</p></div>
+          <div class="panel">
+            <h2>Canales</h2>
+            <div class="item">WhatsApp <span class="status">Sin conectar</span></div>
+            <div class="item">Instagram <span class="status">Sin conectar</span></div>
+            <div class="item">Facebook Messenger <span class="status">Sin conectar</span></div>
+            <label for="demoMessage">Probar una conversación ficticia</label>
+            <textarea id="demoMessage" placeholder="Ej.: Hola, quiero comprar una casa en Florida."></textarea>
+            <button class="primary" id="demoReplyButton" style="margin-top:10px">Probar respuesta del bot</button>
+          </div>
+          <div class="panel">
+            <h2>Vista de conversación de prueba</h2>
+            <div id="chatOutput" class="muted">Las pruebas son demostrativas; no se envían a ninguna persona.</div>
+          </div>
         </div>
+      </section>
+
+      <section class="page" id="knowledge" hidden>
+        <h1>Base de conocimiento del bot</h1>
+        <p class="muted">Aquí se prepara la información que el asistente podrá consultar al responder.</p>
+        <div class="notice">Esta versión mantiene las entradas en memoria del navegador mientras la página está abierta. Todavía no se guardan en una tabla de Supabase ni alimentan un modelo de IA.</div>
+        <div class="panel">
+          <form id="knowledgeForm">
+            <label for="knowledgeTitle">Título</label>
+            <input id="knowledgeTitle" required placeholder="Ej.: Información inicial para compradores">
+            <label for="knowledgeText">Contenido o respuesta aprobada</label>
+            <textarea id="knowledgeText" required placeholder="Información general que el bot podrá utilizar..."></textarea>
+            <button class="primary" type="submit" style="margin-top:12px">Añadir a la lista</button>
+          </form>
+          <h2>Información añadida durante esta sesión</h2>
+          <div id="knowledgeList" class="muted">Todavía no hay entradas.</div>
+        </div>
+      </section>
+
+      <section class="page" id="appointments" hidden>
+        <h1>Citas y seguimientos</h1>
+        <p class="muted">Organiza solicitudes de cita y la información necesaria para agendar.</p>
+        <div class="notice">Las citas de esta versión solo se muestran durante la sesión actual. Todavía no se crean eventos reales en Google Calendar.</div>
+        <div class="panel">
+          <form id="appointmentForm">
+            <label for="appointmentName">Nombre del prospecto</label>
+            <input id="appointmentName" required>
+            <label for="appointmentEmail">Correo electrónico</label>
+            <input id="appointmentEmail" type="email">
+            <label for="appointmentPhone">Teléfono</label>
+            <input id="appointmentPhone">
+            <label for="appointmentDate">Fecha y hora solicitadas</label>
+            <input id="appointmentDate" type="datetime-local" required>
+            <label for="appointmentNotes">Notas de la cita</label>
+            <textarea id="appointmentNotes" placeholder="Motivo o información para el seguimiento"></textarea>
+            <button class="primary" type="submit" style="margin-top:12px">Registrar solicitud</button>
+          </form>
+          <h2>Solicitudes de esta sesión</h2>
+          <div id="appointmentList" class="muted">No hay solicitudes registradas.</div>
+        </div>
+      </section>
+
+      <section class="page" id="integrations" hidden>
+        <h1>Integraciones</h1>
+        <p class="muted">Estado de los servicios que conectaremos al asistente.</p>
+        <div class="grid">
+          <div class="panel"><h2>Supabase</h2><p class="muted">Autenticación y tabla de leads.</p><span class="status">Configurado; falta probar flujos</span></div>
+          <div class="panel"><h2>Bonzo CRM</h2><p class="muted">Crear o actualizar contactos en el CRM.</p><span class="status">Pendiente de credenciales y API</span></div>
+          <div class="panel"><h2>WhatsApp</h2><p class="muted">Recepción y envío de mensajes.</p><span class="status">Pendiente de conexión</span></div>
+          <div class="panel"><h2>Instagram</h2><p class="muted">Mensajes directos y webhooks.</p><span class="status">Pendiente de conexión</span></div>
+          <div class="panel"><h2>Facebook Messenger</h2><p class="muted">Mensajes de la página comercial.</p><span class="status">Pendiente de conexión</span></div>
+          <div class="panel"><h2>Google Calendar</h2><p class="muted">Disponibilidad, creación y confirmación de citas.</p><span class="status">Pendiente de conexión</span></div>
+        </div>
+        <div class="notice">No introduzcas claves secretas en esta página ni en el código público de GitHub. Las credenciales deben guardarse en el servidor o en los secretos de Supabase.</div>
       </section>
     </div>
   </main>
 </div>
 
-<div class="modal" id="modal">
+<div class="modal" id="leadModal">
   <div class="dialog">
-    <h2>Agregar prospecto</h2>
-    <p class="muted">Usa información ficticia para esta prueba.</p>
+    <h2>Registrar lead</h2>
+    <p class="muted">Guarda un prospecto en la base de datos conectada.</p>
     <form id="leadForm">
-      <label for="first">Nombre *</label>
-      <input id="first" required placeholder="Ej. Ana">
-      <label for="last">Apellido</label>
-      <input id="last" placeholder="Ej. García">
-      <label for="email">Correo electrónico</label>
-      <input id="email" type="email" placeholder="ana@example.com">
-      <label for="phone">Teléfono</label>
-      <input id="phone" placeholder="Teléfono de prueba">
-      <label for="source">Origen</label>
-      <select id="source">
-        <option>Formulario web</option><option>WhatsApp</option><option>Facebook</option><option>Instagram</option><option>Referido</option>
+      <label for="leadName">Nombre completo *</label>
+      <input id="leadName" required>
+      <label for="leadPhone">Teléfono</label>
+      <input id="leadPhone">
+      <label for="leadEmail">Correo electrónico</label>
+      <input id="leadEmail" type="email">
+      <label for="leadState">Estado donde desea comprar</label>
+      <input id="leadState" placeholder="Ej.: Florida">
+      <label for="leadGoal">Objetivo</label>
+      <select id="leadGoal">
+        <option value="Comprar vivienda">Comprar vivienda</option>
+        <option value="Refinanciar">Refinanciar</option>
+        <option value="Obtener información">Obtener información</option>
+        <option value="Otro">Otro</option>
       </select>
+      <label for="leadTimeline">Plazo para comprar</label>
+      <select id="leadTimeline">
+        <option value="">Seleccionar</option>
+        <option value="Inmediatamente">Inmediatamente</option>
+        <option value="30-90 días">30-90 días</option>
+        <option value="3-6 meses">3-6 meses</option>
+        <option value="Más adelante">Más adelante</option>
+      </select>
+      <p id="leadMessage" class="notice" role="status"></p>
       <div class="actions">
-        <button type="button" class="secondary" onclick="closeModal()">Cancelar</button>
+        <button type="button" class="secondary" id="cancelLead">Cancelar</button>
         <button type="submit" class="primary">Guardar lead</button>
       </div>
-      <p id="formMessage" class="notice"></p>
     </form>
   </div>
 </div>
 
 <script>
-const leads = [];
-function $(id) { return document.getElementById(id); }
+const SUPABASE_URL = 'https://emaoyzlbhljdrsjydwru.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_iRob65WKqkOuG65onepFbw_jNjbu1Cz';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-function showPage(page, button) {
-  ['dashboard','leads','clients','tasks','integrations'].forEach(id => {
-    $(id).hidden = id !== page;
-  });
-  $('crumb').textContent = page.charAt(0).toUpperCase() + page.slice(1);
-  document.querySelectorAll('.nav').forEach(b => b.classList.remove('active'));
-  if (button) button.classList.add('active');
-  if (page === 'leads') renderLeads();
-  if (page === 'clients') renderClients();
-}
+const $ = id => document.getElementById(id);
+let leads = [];
+let knowledgeItems = [];
+let appointmentItems = [];
 
-function openModal() {
-  $('leadForm').reset();
-  $('formMessage').textContent = '';
-  $('modal').classList.add('open');
-}
-function closeModal() { $('modal').classList.remove('open'); }
-
-function renderLeads() {
-  const q = $('search').value.toLowerCase();
-  const list = leads.filter(l =>
-    (l.first+' '+l.last+' '+l.email+' '+l.phone).toLowerCase().includes(q)
-  );
-  $('leadTable').innerHTML = list.length
-    ? '<table><thead><tr><th>Contacto</th><th>Origen</th><th>Estado</th></tr></thead><tbody>' +
-      list.map(l => '<tr><td><b>'+escapeText(l.first+' '+l.last)+'</b><br>'+escapeText(l.email||l.phone)+'</td><td>'+escapeText(l.source)+'</td><td><span class="status">'+l.status+'</span></td></tr>').join('') +
-      '</tbody></table>'
-    : '<div class="empty">No se encontraron prospectos.</div>';
-}
-function renderClients() {
-  const clients = leads.filter(l => l.status === 'Convertido');
-  $('clientList').textContent = clients.length
-    ? clients.map(l => l.first+' '+l.last).join(', ')
-    : 'Todavía no hay clientes convertidos.';
-}
-function escapeText(s) {
-  return String(s).replace(/[&<>"']/g, c => ({
+function safe(value) {
+  return String(value ?? '').replace(/[&<>"']/g, c => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   })[c]);
 }
-function updateDashboard() {
-  $('total').textContent = leads.length;
-  $('newTotal').textContent = leads.filter(l => l.status === 'Nuevo').length;
-  $('clientTotal').textContent = leads.filter(l => l.status === 'Convertido').length;
-  $('recent').className = leads.length ? '' : 'empty';
-  $('recent').innerHTML = leads.length
-    ? '<table><thead><tr><th>Contacto</th><th>Origen</th><th>Estado</th></tr></thead><tbody>' +
-      leads.slice(0,5).map(l => '<tr><td><b>'+escapeText(l.first+' '+l.last)+'</b><br>'+escapeText(l.email||l.phone)+'</td><td>'+escapeText(l.source)+'</td><td><span class="status">'+l.status+'</span></td></tr>').join('') +
-      '</tbody></table>'
-    : 'Todavía no hay prospectos.<br><br>Agrega uno para comenzar.';
+
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(section => {
+    section.hidden = section.id !== page;
+  });
+  document.querySelectorAll('.nav').forEach(button => {
+    button.classList.toggle('active', button.dataset.page === page);
+  });
+  $('crumb').textContent = ({
+    dashboard:'Dashboard',contacts:'Contactos',inbox:'Bandeja del bot',
+    knowledge:'Base de conocimiento',appointments:'Citas',integrations:'Integraciones'
+  })[page] || page;
+  $('newLeadButton').style.display = page === 'contacts' ? 'none' : 'inline-block';
+  if (page === 'contacts') renderContacts();
+  if (page === 'dashboard') updateDashboard();
 }
 
-const supabaseClient = window.supabase.createClient(
-  'https://emaoyzlbhljdrsjydwru.supabase.co',
-  'sb_publishable_iRob65WKqkOuG65onepFbw_jNjbu1Cz'
-);
-
-const loginScreen = $('loginScreen');
-const mainApp = $('mainApp');
-const loginForm = $('loginForm');
-const loginMessage = $('loginMessage');
+document.querySelectorAll('.nav').forEach(button => {
+  button.addEventListener('click', () => navigate(button.dataset.page));
+});
+document.querySelectorAll('[data-goto]').forEach(button => {
+  button.addEventListener('click', () => navigate(button.dataset.goto));
+});
 
 function showLogin(message = '') {
-  loginScreen.style.display = 'block';
-  mainApp.style.display = 'none';
-  loginMessage.textContent = message;
+  $('loginScreen').style.display = 'block';
+  $('mainApp').style.display = 'none';
+  $('loginMessage').textContent = message;
 }
+
+function fullName(lead) {
+  return lead.full_name || [lead.first,lead.last].filter(Boolean).join(' ') || '';
+}
+
+async function loadLeads() {
+  const { data, error } = await supabaseClient
+    .from('leads').select('*').order('created_at',{ascending:false});
+
+  if (error) {
+    console.error('Supabase:',error.message);
+    $('contactsTable').textContent = 'No se pudieron cargar los leads. Revisa el acceso a la base de datos.';
+    return false;
+  }
+  leads = data || [];
+  updateDashboard();
+  renderContacts();
+  return true;
+}
+
+function updateDashboard() {
+  $('total').textContent = leads.length;
+  $('newTotal').textContent = leads.filter(l => !['Convertido','Cerrado'].includes(l.status)).length;
+  $('clientTotal').textContent = leads.filter(l => l.status === 'Convertido').length;
+  $('appointmentTotal').textContent = appointmentItems.length;
+  const recent = leads.slice(0,5);
+  $('recent').innerHTML = recent.length
+    ? recent.map(l => `<div class="item"><b>${safe(fullName(l))}</b><br><span class="muted">${safe(l.email || l.phone || 'Sin contacto')}</span></div>`).join('')
+    : '<p class="muted">Todavía no hay leads guardados.</p>';
+}
+
+function renderContacts() {
+  const q = $('contactSearch').value.trim().toLowerCase();
+  const filtered = leads.filter(l =>
+    [fullName(l),l.phone,l.email,l.state,l.goal].join(' ').toLowerCase().includes(q)
+  );
+  $('contactsTable').innerHTML = filtered.length
+    ? `<table><thead><tr><th>Nombre</th><th>Teléfono</th><th>Email</th><th>Estado</th><th>Objetivo</th><th>Estado del lead</th></tr></thead><tbody>${
+      filtered.map(l => `<tr><td>${safe(fullName(l))}</td><td>${safe(l.phone)}</td><td>${safe(l.email)}</td><td>${safe(l.state)}</td><td>${safe(l.goal)}</td><td><span class="status">${safe(l.status || 'Nuevo')}</span></td></tr>`).join('')
+    }</tbody></table>`
+    : '<p class="muted">No se encontraron contactos.</p>';
+}
+
+$('contactSearch').addEventListener('input',renderContacts);
+$('refreshButton').addEventListener('click',loadLeads);
+$('newLeadButton').addEventListener('click',openLeadModal);
+$('addContactButton').addEventListener('click',openLeadModal);
+$('cancelLead').addEventListener('click',closeLeadModal);
+
+function openLeadModal() {
+  $('leadForm').reset();
+  $('leadMessage').textContent = '';
+  $('leadModal').classList.add('open');
+}
+function closeLeadModal() { $('leadModal').classList.remove('open'); }
+
+$('exportButton').addEventListener('click',() => {
+  if (!leads.length) {
+    alert('No hay leads para exportar.');
+    return;
+  }
+  const fields = ['full_name','phone','email','state','goal','timeline','source','status','created_at'];
+  const quote = value => '"' + String(value ?? '').replace(/"/g,'""') + '"';
+  const csv = [fields.join(','),...leads.map(l => fields.map(f => quote(f === 'full_name' ? fullName(l) : l[f])).join(','))].join('\r\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'mortgage-leads.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+$('leadForm').addEventListener('submit',async e => {
+  e.preventDefault();
+  const button = e.submitter;
+  button.disabled = true;
+  $('leadMessage').textContent = 'Guardando...';
+
+  try {
+    const {data:sessionData,error:sessionError} = await supabaseClient.auth.getSession();
+    if (sessionError || !sessionData.session) throw new Error('Vuelve a iniciar sesión.');
+
+    const name = $('leadName').value.trim();
+    const phone = $('leadPhone').value.trim();
+    const email = $('leadEmail').value.trim();
+    if (!phone && !email) throw new Error('Introduce un teléfono o correo electrónico.');
+
+    const {error} = await supabaseClient.from('leads').insert({
+      full_name:name,
+      phone:phone || null,
+      email:email || null,
+      state:$('leadState').value.trim() || null,
+      goal:$('leadGoal').value,
+      timeline:$('leadTimeline').value || null,
+      source:'Panel Mortgage Assistant',
+      status:'Nuevo',
+      consent_confirmed:false
+    });
+    if (error) throw error;
+
+    $('leadMessage').textContent = 'Lead guardado correctamente.';
+    await loadLeads();
+    setTimeout(closeLeadModal,500);
+  } catch (error) {
+    console.error(error);
+    $('leadMessage').textContent = 'No se pudo guardar. Puede faltar permiso de escritura en Supabase.';
+  } finally {
+    button.disabled = false;
+  }
+});
+
+$('demoReplyButton').addEventListener('click',() => {
+  const message = $('demoMessage').value.trim();
+  if (!message) {
+    $('chatOutput').textContent = 'Escribe un mensaje ficticio para probar.';
+    return;
+  }
+  $('chatOutput').innerHTML =
+    `<div class="chat"><b>Prospecto de prueba:</b><br>${safe(message)}</div>` +
+    `<div class="chat"><b>Respuesta de demostración:</b><br>¡Hola! Gracias por contactarnos. ¿Me compartes tu nombre completo y el mejor teléfono para comunicarnos contigo? También quisiera saber en qué estado estás buscando comprar y cuál es tu plazo aproximado.<p class="small">Respuesta simulada: aún no es un bot conectado a WhatsApp, Instagram o Facebook.</p></div>`;
+});
+
+$('knowledgeForm').addEventListener('submit',e => {
+  e.preventDefault();
+  knowledgeItems.push({title:$('knowledgeTitle').value.trim(),text:$('knowledgeText').value.trim()});
+  $('knowledgeForm').reset();
+  renderKnowledge();
+});
+
+function renderKnowledge() {
+  $('knowledgeList').innerHTML = knowledgeItems.length
+    ? knowledgeItems.map((item,i) => `<div class="item"><b>${safe(item.title)}</b><p>${safe(item.text)}</p><button class="danger" data-delete-knowledge="${i}">Eliminar</button></div>`).join('')
+    : 'Todavía no hay entradas.';
+  document.querySelectorAll('[data-delete-knowledge]').forEach(button => {
+    button.addEventListener('click',() => {
+      knowledgeItems.splice(Number(button.dataset.deleteKnowledge),1);
+      renderKnowledge();
+    });
+  });
+}
+
+$('appointmentForm').addEventListener('submit',e => {
+  e.preventDefault();
+  appointmentItems.push({
+    name:$('appointmentName').value.trim(),
+    email:$('appointmentEmail').value.trim(),
+    phone:$('appointmentPhone').value.trim(),
+    date:$('appointmentDate').value,
+    notes:$('appointmentNotes').value.trim()
+  });
+  $('appointmentForm').reset();
+  renderAppointments();
+  updateDashboard();
+});
+
+function renderAppointments() {
+  $('appointmentList').innerHTML = appointmentItems.length
+    ? appointmentItems.map(a => `<div class="item"><b>${safe(a.name)}</b><p>${safe(a.date)}</p><p>${safe(a.email)} · ${safe(a.phone)}</p><p>${safe(a.notes)}</p><span class="status">Solicitud local, no sincronizada</span></div>`).join('')
+    : 'No hay solicitudes registradas.';
+}
+
+$('logoutButton').addEventListener('click',async() => {
+  await supabaseClient.auth.signOut();
+  showLogin();
+});
+
+$('loginForm').addEventListener('submit',async e => {
+  e.preventDefault();
+  const button = e.submitter;
+  button.disabled = true;
+  $('loginMessage').textContent = 'Verificando acceso...';
+  try {
+    const {data,error} = await supabaseClient.auth.signInWithPassword({
+      email:$('loginEmail').value.trim(),
+      password:$('loginPassword').value
+    });
+    if (error) throw error;
+    await openPanel(data.session);
+  } catch(error) {
+    console.error(error);
+    showLogin('No se pudo iniciar sesión. Verifica el correo y la contraseña.');
+  } finally {
+    button.disabled = false;
+  }
+});
 
 async function openPanel(session) {
   if (!session) {
     showLogin();
     return;
   }
-
-  const { data, error } = await supabaseClient
-    .from('leads')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    showLogin('No se pudieron cargar los prospectos. Revisa tu acceso.');
-    console.error('Error cargando prospectos:', error.message);
+  const ok = await loadLeads();
+  if (!ok) {
+    showLogin('Acceso iniciado, pero no se pudieron cargar los leads. Revisa las políticas de Supabase.');
     return;
   }
-
-  leads.length = 0;
-  data.forEach(l => {
-    const parts = (l.full_name || '').split(' ');
-    leads.push({
-      first: parts.shift() || '',
-      last: parts.join(' '),
-      email: l.email || '',
-      phone: l.phone || '',
-      source: l.source || 'Página web',
-      status: l.status === 'Convertido' ? 'Convertido' : 'Nuevo'
-    });
-  });
-
-  loginScreen.style.display = 'none';
-  mainApp.style.display = 'flex';
-  updateDashboard();
-  renderLeads();
+  $('loginScreen').style.display = 'none';
+  $('mainApp').style.display = 'flex';
+  navigate('dashboard');
 }
 
-loginForm.addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const button = loginForm.querySelector('button[type="submit"]');
-  button.disabled = true;
-  button.textContent = 'Ingresando...';
-  loginMessage.textContent = '';
-
-  try {
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-      email: $('loginEmail').value.trim(),
-      password: $('loginPassword').value
-    });
-    if (error) {
-      showLogin('Correo o contraseña incorrectos.');
-      return;
-    }
-    await openPanel(data.session);
-  } catch (error) {
-    showLogin('No se pudo iniciar sesión. Inténtalo nuevamente.');
-  } finally {
-    button.disabled = false;
-    button.textContent = 'Iniciar sesión';
-  }
-});
-
-$('leadForm').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const email = $('email').value.trim();
-  const phone = $('phone').value.trim();
-
-  if (!email && !phone) {
-    $('formMessage').textContent = 'Añade un correo o teléfono de prueba.';
-    return;
-  }
-
-  const button = this.querySelector('button[type="submit"]');
-  button.disabled = true;
-  button.textContent = 'Guardando...';
-  $('formMessage').textContent = '';
-
-  try {
-    const { data: sessionData } = await supabaseClient.auth.getSession();
-    const accessToken = sessionData.session?.access_token;
-    if (!accessToken) throw new Error('Debes iniciar sesión para guardar prospectos.');
-
-    const response = await fetch(
-      'https://emaoyzlbhljdrsjydwru.supabase.co/functions/v1/mortgage-leads',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': 'sb_publishable_iRob65WKqkOuG65onepFbw_jNjbu1Cz',
-          'Authorization': `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          full_name: ($('first').value.trim() + ' ' + $('last').value.trim()).trim(),
-          phone,
-          email,
-          source: $('source').value
-        })
-      }
-    );
-
-    const result = await response.json();
-    if (!response.ok || !result.success) {
-      throw new Error(result.error || 'No se pudo guardar el prospecto.');
-    }
-
-    leads.unshift({
-      first: $('first').value.trim(),
-      last: $('last').value.trim(),
-      email,
-      phone,
-      source: $('source').value,
-      status: 'Nuevo'
-    });
-    closeModal();
-    updateDashboard();
-    renderLeads();
-  } catch (error) {
-    $('formMessage').textContent = 'No se pudo guardar. Inténtalo nuevamente.';
-    console.error('Error guardando prospecto:', error.message);
-  } finally {
-    button.disabled = false;
-    button.textContent = 'Guardar lead';
-  }
-});
-
-supabaseClient.auth.onAuthStateChange((event) => {
+supabaseClient.auth.onAuthStateChange((event,session) => {
   if (event === 'SIGNED_OUT') showLogin();
 });
 
-supabaseClient.auth.getSession().then(({ data, error }) => {
+supabaseClient.auth.getSession().then(({data,error}) => {
   if (error || !data.session) showLogin();
   else openPanel(data.session);
 });
