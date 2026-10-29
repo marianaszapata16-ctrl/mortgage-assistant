@@ -370,55 +370,125 @@ $('exportButton').addEventListener('click',() => {
   URL.revokeObjectURL(url);
 });
 
-$('leadForm').addEventListener('submit',async e => {
+
+$('leadForm').addEventListener('submit', async e => {
   e.preventDefault();
+
   const button = e.submitter;
   button.disabled = true;
   $('leadMessage').textContent = 'Guardando...';
 
   try {
-    const {data:sessionData,error:sessionError} = await supabaseClient.auth.getSession();
-    if (sessionError || !sessionData.session) throw new Error('Vuelve a iniciar sesión.');
+    const { data: sessionData, error: sessionError } =
+      await supabaseClient.auth.getSession();
+
+    if (sessionError || !sessionData.session) {
+      throw new Error('Vuelve a iniciar sesión.');
+    }
 
     const name = $('leadName').value.trim();
     const phone = $('leadPhone').value.trim();
     const email = $('leadEmail').value.trim();
-    if (!phone && !email) throw new Error('Introduce un teléfono o correo electrónico.');
 
-    const {error} = await supabaseClient.from('leads').insert({
-      full_name:name,
-      phone:phone || null,
-      email:email || null,
-      state:$('leadState').value.trim() || null,
-      goal:$('leadGoal').value,
-      timeline:$('leadTimeline').value || null,
-      source:'Panel Mortgage Assistant',
-      status:'Nuevo',
-      consent_confirmed:false
-    });
+    if (!name) {
+      throw new Error('Introduce el nombre completo.');
+    }
+
+    if (!phone && !email) {
+      throw new Error('Introduce un teléfono o correo electrónico.');
+    }
+
+    const { data, error } =
+      await supabaseClient.functions.invoke('mortgage-leads', {
+        body: {
+          full_name: name,
+          phone: phone || null,
+          email: email || null,
+          state: $('leadState').value.trim() || null,
+          goal: $('leadGoal').value,
+          timeline: $('leadTimeline').value || null,
+          source: 'Panel Mortgage Assistant',
+          status: 'Nuevo',
+          consent_confirmed: false
+        }
+      });
+
     if (error) throw error;
 
-    $('leadMessage').textContent = 'Lead guardado correctamente.';
+    if (data && data.success === false) {
+      throw new Error(data.error || 'No se pudo guardar el lead.');
+    }
+
+    $('leadMessage').textContent =
+      'Solicitud enviada. Comprobando el registro...';
+
     await loadLeads();
-    setTimeout(closeLeadModal,500);
+    setTimeout(closeLeadModal, 700);
+
   } catch (error) {
-    console.error(error);
-    $('leadMessage').textContent = 'No se pudo guardar. Puede faltar permiso de escritura en Supabase.';
+    console.error('Error al guardar el lead:', error);
+
+    $('leadMessage').textContent =
+      error.message || 'No se pudo guardar. Revisa la configuración de Supabase.';
   } finally {
     button.disabled = false;
   }
 });
 
-$('demoReplyButton').addEventListener('click',() => {
+
+$('demoReplyButton').addEventListener('click', async () => {
   const message = $('demoMessage').value.trim();
+  const button = $('demoReplyButton');
+
   if (!message) {
-    $('chatOutput').textContent = 'Escribe un mensaje ficticio para probar.';
+    $('chatOutput').textContent = 'Escribe un mensaje para probar el asistente.';
     return;
   }
-  $('chatOutput').innerHTML =
-    `<div class="chat"><b>Prospecto de prueba:</b><br>${safe(message)}</div>` +
-    `<div class="chat"><b>Respuesta de demostración:</b><br>¡Hola! Gracias por contactarnos. ¿Me compartes tu nombre completo y el mejor teléfono para comunicarnos contigo? También quisiera saber en qué estado estás buscando comprar y cuál es tu plazo aproximado.<p class="small">Respuesta simulada: aún no es un bot conectado a WhatsApp, Instagram o Facebook.</p></div>`;
+
+  button.disabled = true;
+  $('chatOutput').textContent = 'El asistente está preparando su respuesta...';
+
+  try {
+    const { data: sessionData, error: sessionError } =
+      await supabaseClient.auth.getSession();
+
+    if (sessionError || !sessionData.session) {
+      throw new Error('Tu sesión expiró. Inicia sesión nuevamente.');
+    }
+
+    const { data, error } =
+      await supabaseClient.functions.invoke('mortgage-chat', {
+        body: {
+          message: message,
+          history: []
+        }
+      });
+
+    if (error) throw error;
+
+    if (!data || data.success !== true || !data.reply) {
+      throw new Error(
+        data?.error || 'El asistente no devolvió una respuesta válida.'
+      );
+    }
+
+    $('chatOutput').innerHTML =
+      `<div class="chat"><b>Tu mensaje:</b><br>${safe(message)}</div>` +
+      `<div class="chat"><b>Asistente IA:</b><br>${safe(data.reply).replace(/\n/g, '<br>')}</div>`;
+
+    $('demoMessage').value = '';
+
+  } catch (error) {
+    console.error('Error del asistente:', error);
+
+    $('chatOutput').textContent =
+      'No se pudo conectar con el asistente: ' +
+      (error.message || 'Error desconocido. Revisa Supabase.');
+  } finally {
+    button.disabled = false;
+  }
 });
+
 
 $('knowledgeForm').addEventListener('submit',e => {
   e.preventDefault();
